@@ -10,7 +10,7 @@ import bookingRoutes from "./routes/bookings.js";
 import reviewRoutes from "./routes/reviews.js";
 import adminRoute from "./routes/admin.js";
 import adminBookingRoute from "./routes/adminBooking.js";
-import mpesaRoute from "./routes/mpesa.js";
+// import mpesaRoute from "./routes/mpesa.js";
 
 
 dotenv.config();
