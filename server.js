@@ -34,7 +34,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoute);
 app.use("/api/admin/bookings", adminBookingRoute);
-app.use("/api/mpesa", mpesaRoute);
+// app.use("/api/mpesa", mpesaRoute);
 
 app.get("/test-email", async (req, res) => {
   await sendVerificationEmail("lagatkipkemboi69@gmail.com", "123test");
