@@ -63,7 +63,7 @@ export const sendResetEmail = async (email, token) => {
     },
   });
 
-  const link = `${process.env.CLIENT_URL}/verify/${token}`;
+  const link = `${process.env.CLIENT_URL}/reset/${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
