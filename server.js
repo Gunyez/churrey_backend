@@ -21,7 +21,7 @@ const app = express();
 app.use(cors({
   origin:[
     "http://localhost:3000",
-    "https://churrey-frontend-xmg5.vercel.app/"
+    "https://churrey-frontend-xmg5.vercel.app"
     ],
   credentials: true
 }));
