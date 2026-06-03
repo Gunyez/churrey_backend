@@ -17,7 +17,7 @@ export const sendVerificationEmail = async (email, token) => {
     console.log("Token", token);
     
 
-    const link = `http://localhost:3000/verify/${token}`;
+    const link = `${process.env.CLIENT_URL}/verify/${token}`;
 
     console.log("🔗 Verification link:", link);
 
@@ -63,7 +63,7 @@ export const sendResetEmail = async (email, token) => {
     },
   });
 
-  const link = `http://localhost:3000/reset/${token}`;
+  const link = `${process.env.CLIENT_URL}/verify/${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
