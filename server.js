@@ -47,6 +47,14 @@ app.get("/test-email", async (req, res) => {
   res.send("Email test triggered");
 });
 
+app.get("/env-check", (req, res) => {
+  res.json({
+    emailUser: process.env.EMAIL_USER,
+    emailPassExists: !!process.env.EMAIL_PASS,
+    clientUrl: process.env.CLIENT_URL,
+  });
+});
+
 app.listen(process.env.PORT, () => {
   connectDB();
   console.log("Server running");
