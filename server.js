@@ -2,7 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./utils/db.js";
+import { connectDB } from "./utils/db.js";\
+import { sendVerificationEmail } from "./utils/sendEmail.js";
+
 
 import authRoutes from "./routes/auth.js";
 import houseRoutes from "./routes/houses.js";
@@ -47,6 +49,26 @@ app.get("/", (req, res) => {
 //   res.send("Email test triggered");
 // });
 
+app.get("/test-email", async (req, res) => {
+  try {
+    const info = await sendVerificationEmail(
+      "lagatkipkemboi69@gmail.com",
+      "123test"
+    );
+
+    res.json({
+      success: true,
+      messageId: info.messageId,
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
 app.get("/env-check", (req, res) => {
   res.json({
     emailUser: process.env.EMAIL_USER,
@@ -55,39 +77,7 @@ app.get("/env-check", (req, res) => {
   });
 });
 
-app.get("/test-email", async (req, res) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
 
-    await transporter.verify();
-
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: "YOUR_PERSONAL_EMAIL@gmail.com",
-      subject: "Test Email",
-      text: "Render email test",
-    });
-
-    res.json({
-      success: true,
-      messageId: info.messageId,
-    });
-
-  } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
-});
 
 app.listen(process.env.PORT, () => {
   connectDB();
