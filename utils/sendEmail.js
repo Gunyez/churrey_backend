@@ -54,15 +54,17 @@ export const sendVerificationEmail = async (email, token) => {
       throw new Error("Token is missing!");
     }
 
-    const transporter = nodemailer.createTransport({
+   const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
-
-    console.log("Token", token);
+    
+    await transporter.verify();
+    
+    console.log("SMTP VERIFIED");
     
 
     const link = `${process.env.CLIENT_URL}/verify/${token}`;
