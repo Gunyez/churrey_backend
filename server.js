@@ -42,10 +42,10 @@ app.use("/api/admin/bookings", adminBookingRoute);
 app.get("/", (req, res) => {
   res.send("Churrey Backend is running");
 });
-app.get("/test-email", async (req, res) => {
-  await sendVerificationEmail("lagatkipkemboi69@gmail.com", "123test");
-  res.send("Email test triggered");
-});
+// app.get("/test-email", async (req, res) => {
+//   await sendVerificationEmail("lagatkipkemboi69@gmail.com", "123test");
+//   res.send("Email test triggered");
+// });
 
 app.get("/env-check", (req, res) => {
   res.json({
@@ -53,6 +53,40 @@ app.get("/env-check", (req, res) => {
     emailPassExists: !!process.env.EMAIL_PASS,
     clientUrl: process.env.CLIENT_URL,
   });
+});
+
+app.get("/test-email", async (req, res) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.verify();
+
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: "YOUR_PERSONAL_EMAIL@gmail.com",
+      subject: "Test Email",
+      text: "Render email test",
+    });
+
+    res.json({
+      success: true,
+      messageId: info.messageId,
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
 });
 
 app.listen(process.env.PORT, () => {
