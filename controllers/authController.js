@@ -33,9 +33,13 @@ export const register = async (req, res) => {
     
 
     // 🔥 TRY sending email but don't break registration
-    try {
+   try {
+      console.log("📧 Sending verification email...");
       await sendVerificationEmail(email, token);
+      console.log("✅ Verification email sent");
     } catch (err) {
+      console.error("❌ Verification email failed:");
+      console.error(err);
     }
 
     res.status(201).json(
