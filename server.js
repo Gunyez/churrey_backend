@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
 app.get("/test-email", async (req, res) => {
   try {
     const result = await sendVerificationEmail(
-      "your-email@gmail.com",
+      "lagatbrian69@gmail.com",
       "123test"
     );
 
