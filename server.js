@@ -50,23 +50,10 @@ app.get("/", (req, res) => {
 // });
 
 app.get("/test-email", async (req, res) => {
-  try {
-    const info = await sendVerificationEmail(
-      "lagatbrian69@gmail.com",
-      "123test"
-    );
-
-    res.json({
-      success: true,
-      messageId: info.messageId,
-    });
-
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message,
-    });
-  }
+  res.json({
+    success: true,
+    emailUser: process.env.EMAIL_USER,
+  });
 });
 
 app.get("/env-check", (req, res) => {
