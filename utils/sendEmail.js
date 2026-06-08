@@ -1,4 +1,6 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (email, token) => {
   try {
@@ -6,42 +8,38 @@ export const sendVerificationEmail = async (email, token) => {
       throw new Error("Token is missing!");
     }
 
-    const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
-    await transporter.verify();
-
-    console.log("✅ SMTP VERIFIED");
-
     const link = `${process.env.CLIENT_URL}/verify/${token}`;
 
-    console.log("🔗 Verification link:", link);
-
-    const info = await transporter.sendMail({
-      from: `"Churrey Homes" <${process.env.EMAIL_USER}>`,
+    const result = await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: email,
       subject: "Verify your account",
-      text: `Verify your account here: ${link}`,
       html: `
         <h2>Welcome to Churrey Homes</h2>
+
         <p>Please verify your account by clicking the button below:</p>
-        <a href="${link}">
-          Verify Account
+
+        <a href="${link}"
+           style="
+             display:inline-block;
+             padding:10px 20px;
+             background:black;
+             color:white;
+             text-decoration:none;
+             border-radius:5px;
+           ">
+           Verify Account
         </a>
+
+        <p>If the button doesn't work, copy this link:</p>
+        <p>${link}</p>
       `,
     });
 
-    console.log("📧 Verification email sent");
-    console.log("Message ID:", info.messageId);
+    console.log("✅ Verification email sent");
+    console.log(result);
 
-    return info;
+    return result;
 
   } catch (err) {
     console.error("❌ EMAIL ERROR:", err);
@@ -49,82 +47,31 @@ export const sendVerificationEmail = async (email, token) => {
   }
 };
 
-// export const sendVerificationEmail = async (email, token) => {
-//   try {
-//     if (!token) {
-//       throw new Error("Token is missing!");
-//     }
-
-//    const transporter = nodemailer.createTransport({
-//       service: "gmail",
-//       auth: {
-//         user: process.env.EMAIL_USER,
-//         pass: process.env.EMAIL_PASS,
-//       },
-//     });
-    
-//     await transporter.verify();
-    
-//     console.log("SMTP VERIFIED");
-    
-
-//     const link = `${process.env.CLIENT_URL}/verify/${token}`;
-
-//     console.log("🔗 Verification link:", link);
-
-//     await transporter.sendMail({
-//       from: `"Churrey Homes" <${process.env.EMAIL_USER}>`,
-//       to: email,
-//       subject: "Verify your account",
-//       text: `Verify your account here: ${link}`,
-
-//       html: `
-//         <h2>Welcome to Churrey Homes</h2>
-//         <p>Please verify your account by clicking the button below:</p>
-        
-//         <a href="${link}" 
-//            style="
-//              display:inline-block;
-//              padding:10px 20px;
-//              background:black;
-//              color:white;
-//              text-decoration:none;
-//              border-radius:5px;
-//            ">
-//            Verify Account
-//         </a>
-
-//         <p>If the button doesn't work, copy this link:</p>
-//         <p>${link}</p>
-//       `,
-//     });
-
-//     console.log("📧 Verification email sent");
-
-//   } catch (err) {
-//     console.error("❌ EMAIL ERROR:", err.message);
-//   }
-// };
 export const sendResetEmail = async (email, token) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  try {
+    const link = `${process.env.CLIENT_URL}/reset/${token}`;
 
-  const link = `${process.env.CLIENT_URL}/reset/${token}`;
+    const result = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: email,
+      subject: "Reset your password",
+      html: `
+        <h2>Password Reset</h2>
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Reset your password",
-    text: `Reset your password: ${link}`, // 👈 add this
-    html: `
-      <h2>Password Reset</h2>
-      <p>Click below to reset your password:</p>
-      <a href="${link}">Reset Password</a>
-    `,
-  });
+        <p>Click below to reset your password:</p>
+
+        <a href="${link}">
+          Reset Password
+        </a>
+
+        <p>${link}</p>
+      `,
+    });
+
+    return result;
+
+  } catch (err) {
+    console.error("❌ RESET EMAIL ERROR:", err);
+    throw err;
+  }
 };
