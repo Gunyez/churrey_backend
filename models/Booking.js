@@ -13,7 +13,13 @@ const BookingSchema = new mongoose.Schema({
   bookingStatus: {
       type: String,
       default: "pending",
-    },   
+    }, 
+  mpesaReceipt: {
+      type: String,
+    },
+  phone: {
+      type: String,
+    },
   status: { type: String, default: "confirmed" }
 }, { timestamps: true });
 

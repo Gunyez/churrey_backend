@@ -12,7 +12,7 @@ import bookingRoutes from "./routes/bookings.js";
 import reviewRoutes from "./routes/reviews.js";
 import adminRoute from "./routes/admin.js";
 import adminBookingRoute from "./routes/adminBooking.js";
-// import mpesaRoute from "./routes/mpesa.js";
+import mpesaRoute from "./routes/mpesa.js";
 
 
 dotenv.config();
@@ -39,7 +39,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoute);
 app.use("/api/admin/bookings", adminBookingRoute);
-// app.use("/api/mpesa", mpesaRoute);
+app.use("/api/mpesa", mpesaRoute);
 
 app.get("/", (req, res) => {
   res.send("Churrey Backend is running smoothley");

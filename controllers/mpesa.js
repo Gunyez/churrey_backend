@@ -1,63 +1,117 @@
-import axios from "axios";
-import moment from "moment";
+import Booking from "../models/Booking.js";
 
-const generateToken = async () => {
-  const auth = Buffer.from(
-    `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`
-  ).toString("base64");
+import { stkPush } from "../utils/mpesa.js";
 
-  const response = await axios.get(
-    "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
-    {
-      headers: {
-        Authorization: `Basic ${auth}`,
-      },
-    }
-  );
+export const initiatePayment = async (req, res) => {
 
-  return response.data.access_token;
-};
-
-export const stkPush = async (req, res) => {
   try {
-    const token = await generateToken();
 
-    const timestamp = moment().format("YYYYMMDDHHmmss");
+    const {
+      bookingId,
+      phone,
+      amount,
+    } = req.body;
 
-    const password = Buffer.from(
-      process.env.MPESA_SHORTCODE +
-      process.env.MPESA_PASSKEY +
-      timestamp
-    ).toString("base64");
+    const response = await stkPush({
+      bookingId,
+      phone,
+      amount,
+    });
 
-    const phone = req.body.phone;
-
-    const response = await axios.post(
-      "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
-      {
-        BusinessShortCode: process.env.MPESA_SHORTCODE,
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: req.body.amount,
-        PartyA: phone,
-        PartyB: process.env.MPESA_SHORTCODE,
-        PhoneNumber: phone,
-        CallBackURL: process.env.MPESA_CALLBACK_URL,
-        AccountReference: "ChurreyHomes",
-        TransactionDesc: "House Booking Payment",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    res.status(200).json(response.data);
+    res.status(200).json({
+      message: "STK Push sent",
+      data: response.data,
+    });
 
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).json("M-Pesa payment failed");
+
+    console.log(err.response?.data || err);
+
+    res.status(500).json("Payment failed");
+  }
+};
+
+export const mpesaCallback = async (req, res) => {
+
+  try {
+
+    console.log(
+      JSON.stringify(req.body, null, 2)
+    );
+
+    const callback =
+      req.body.Body.stkCallback;
+
+    if (callback.ResultCode === 0) {
+
+      const metadata =
+        callback.CallbackMetadata.Item;
+
+      const receipt =
+        metadata.find(
+          (item) =>
+            item.Name === "MpesaReceiptNumber"
+        )?.Value;
+
+      const bookingId =
+        metadata.find(
+          (item) =>
+            item.Name === "AccountReference"
+        )?.Value;
+
+      // 1️⃣ Update booking
+
+      const booking =
+        await Booking.findByIdAndUpdate(
+          bookingId,
+          {
+            paymentStatus: "paid",
+            bookingStatus: "approved",
+            mpesaReceipt: receipt,
+          },
+          { new: true }
+        );
+
+      // 2️⃣ Block house dates
+
+      const dates = [];
+
+      let current = new Date(
+        booking.startDate
+      );
+
+      while (
+        current <= new Date(booking.endDate)
+      ) {
+
+        dates.push(new Date(current));
+
+        current.setDate(
+          current.getDate() + 1
+        );
+      }
+
+      await House.findByIdAndUpdate(
+        booking.houseId,
+        {
+          $push: {
+            unavailableDates: {
+              $each: dates,
+            },
+          },
+        }
+      );
+    }
+
+    res.status(200).json({
+      ResultCode: 0,
+      ResultDesc: "Accepted",
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json("Callback failed");
   }
 };

@@ -1,37 +1,93 @@
 import Booking from "../models/Booking.js";
 import House from "../models/House.js";
+import {isHouseAvailable} from "../utils/checkAvailability.js";
 
-export const createBooking = async (req, res) => {
+// export const createBooking = async (req, res) => {
+//   try {
+//     const { houseId, startDate, endDate } = req.body;
+
+//     const dates = [];
+//     let current = new Date(startDate);
+
+//     while (current <= new Date(endDate)) {
+//       dates.push(new Date(current));
+//       current.setDate(current.getDate() + 1);
+//     }
+
+//     const house = await House.findById(houseId);
+
+//     const isUnavailable = house.unavailableDates.some(date =>
+//       dates.includes(date)
+//     );
+
+//     if (isUnavailable) {
+//       return res.status(400).json("House not available");
+//     }
+
+//     house.unavailableDates.push(...dates);
+//     await house.save();
+
+//     const newBooking = new Booking(req.body);
+//     const saved = await newBooking.save();
+
+//     res.status(200).json(saved);
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// };
+
+
+
+
+export const createBooking = async (
+  req,
+  res
+) => {
   try {
-    const { houseId, startDate, endDate } = req.body;
+    const {
+      houseId,
+      startDate,
+      endDate,
+    } = req.body;
 
-    const dates = [];
-    let current = new Date(startDate);
+    const house =
+      await House.findById(houseId);
 
-    while (current <= new Date(endDate)) {
-      dates.push(new Date(current));
-      current.setDate(current.getDate() + 1);
+    if (!house) {
+      return res
+        .status(404)
+        .json("House not found");
     }
 
-    const house = await House.findById(houseId);
+    const available =
+      isHouseAvailable(
+        house,
+        startDate,
+        endDate
+      );
 
-    const isUnavailable = house.unavailableDates.some(date =>
-      dates.includes(date)
-    );
-
-    if (isUnavailable) {
-      return res.status(400).json("House not available");
+    if (!available) {
+      return res.status(400).json({
+        message:
+          "House already booked for selected dates",
+      });
     }
 
-    house.unavailableDates.push(...dates);
-    await house.save();
+    const booking = new Booking({
+      ...req.body,
+      paymentStatus: "pending",
+      bookingStatus: "pending",
+    });
 
-    const newBooking = new Booking(req.body);
-    const saved = await newBooking.save();
+    const saved =
+      await booking.save();
 
-    res.status(200).json(saved);
+    res.status(201).json(saved);
+
   } catch (err) {
-    res.status(500).json(err);
+    console.log(err);
+
+    res.status(500).json(err.message);
   }
 };
 
