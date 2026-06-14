@@ -11,4 +11,14 @@ router.post("/pay", initiatePayment);
 
 router.post("/callback", mpesaCallback);
 
+router.get("/token", async (req, res) => {
+  try {
+    const token = await generateToken();
+    res.json({ token });
+  } catch (err) {
+    console.log(err.response?.data || err);
+    res.status(500).json(err.response?.data || err.message);
+  }
+});
+
 export default router;
